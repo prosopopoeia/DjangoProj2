@@ -18,16 +18,17 @@
 
 		<div class="container-fluid">	
 			{{ auction.listing_detail }}
-			<div class="bg-dark my-3 py-3"></div>		
+					
 			<h4 class="display-5">Seller: {{ auction.user.username }} {{ auction.user.email }}<h4>
 			<h3>Minimum Bid: {{ auction.listing_price }} </h3>
 			<h4>Ends: {{ auction.end_date }}</h4>
+			<a href="{% url 'display_listing' auction.listing_name %}">Visit {{ auction.listing_name }} detail page</a>
+			<br /><br />
 			{{ auction.listing_category }}
 			<br /><br />
 		</div>
 		<br /><br />
-		<div class="bg-dark my-1 py-1 text-center text-white">--------------------------------------------------------------------------------</div>		
-		<br /><br />
+		<div class="bg-dark my-1 py-1 text-center text-white">-</div>				
     {% endfor %}
    
 {% endblock %}

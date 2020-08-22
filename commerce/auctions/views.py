@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from auctions.forms import NewListingForm
@@ -72,6 +73,35 @@ def register(request):
             # new_entry.amount = decimal.Decimal(e_amt)
             # new_entry.save()   
             ###################################################
+            
+def display_listing(request, listing):
+    Auction_object = get_object_or_404(AuctionListing, listing_name=listing)
+    return show_listing(request, Auction_object)
+    
+def show_listing(request, listing):
+    vimg_width = "0"
+    vimg_height = "0"            
+    if listing.image_path:
+        vimg_width = "400"
+        vimg_height = "500" 
+            
+    category_text = ""
+    if listing.listing_category:              
+        category_text = "Listing Category: " + listing.listing_category
+            
+        return render(request, "auctions/display_listing.html", {
+            "dlisting_name" : listing.listing_name,
+            "dcurrent_bid" : listing.listing_price,
+            "dimage_path" : listing.image_path,
+            "duser_name" : listing.user.username,
+            "duser_email" : listing.user.email,
+            "dlisting_category" : category_text,
+            "dlisting_detail" : listing.listing_detail,
+            "dimg_width" : vimg_width,
+            "dimg_height" : vimg_height,
+            "dend_date" : listing.end_date,
+        })
+    
 def create_listing(request):
 
     if request.method == "POST":
@@ -87,8 +117,9 @@ def create_listing(request):
             puser = request.POST.get("huser")
             usey = User.objects.get(username=puser)
         
-            Auction_object = get_object_or_404(AuctionListing, listing_name=vname)
-            if not Auction_object:
+            try:
+                Auction_object = AuctionListing.objects.get(listing_name=vname)
+            except ObjectDoesNotExist:
                 AuctionListing.objects.create(
                     listing_name=vname, 
                     listing_price=vlisting_price, 
@@ -97,30 +128,10 @@ def create_listing(request):
                     listing_category = vlisting_category,
                     end_date = vend_date,
                     user=usey
-            )
+                )
+                Auction_object = get_object_or_404(AuctionListing, listing_name=vname)
             
-            vimg_width = "0"
-            vimg_height = "0"            
-            if vimage_path:
-                vimg_width = "400"
-                vimg_height = "500" 
-            
-            category_text = ""
-            if vlisting_category:              
-                category_text = "Listing Category: " + vlisting_category
-            
-            return render(request, "auctions/display_listing.html", {
-                "dlisting_name" : vname,
-                "dcurrent_bid" : vlisting_price,
-                "dimage_path" : vimage_path,
-                "duser_name" : usey.username,
-                "duser_email" : usey.email,
-                "dlisting_category" : category_text,
-                "dlisting_detail" : vlisting_detail,
-                "dimg_width" : vimg_width,
-                "dimg_height" : vimg_height,
-                "dend_date" : vend_date,
-            })
+            return show_listing(request, Auction_object)
         
     listing_form = NewListingForm()
     

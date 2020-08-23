@@ -84,7 +84,7 @@ def register(request):
     
 def watchlist(request, plisting, puser):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
-    User_object = get_object_or_404(User, username=puser)
+    User_object = get_object_or_404(User, username=request.session["uname"])
     WatchList.objects.create(auction_listing=Auction_object, user=User_object)
     return show_listing(request, Auction_object)
 

@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from auctions.forms import NewListingForm
 
-from .models import User, AuctionListing, Bids, AuctionListingComments
+from .models import User, AuctionListing, Bids, AuctionListingComments, WatchList
 
 
 def index(request):
@@ -27,6 +27,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
+            request.session["uname"] = username
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "auctions/login.html", {
@@ -39,7 +40,6 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
-#AggregateStats.objects.create(owning_user=v_user)
 
 def register(request):
     if request.method == "POST":
@@ -74,6 +74,20 @@ def register(request):
             # new_entry.save()   
             ###################################################
             
+# def add_to_watchlist(puser, auction):
+    # try:
+        # WatchList.objects.create(auction_listing=auction, user=puser)        
+    # except:
+        # return false
+        
+    # return true
+    
+def watchlist(request, plisting, puser):
+    Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
+    User_object = get_object_or_404(User, username=puser)
+    WatchList.objects.create(auction_listing=Auction_object, user=User_object)
+    return show_listing(request, Auction_object)
+
 def display_listing(request, listing):
     Auction_object = get_object_or_404(AuctionListing, listing_name=listing)
     return show_listing(request, Auction_object)
@@ -88,6 +102,12 @@ def show_listing(request, listing):
     category_text = ""
     if listing.listing_category:              
         category_text = "Listing Category: " + listing.listing_category
+        
+        # try:
+            # Watchlist_object = WatchList.objects.get(listing_name=vname, )            
+            # watchstate = "Item watchlisted"
+        # except ObjectDoesNotExist:
+            # watchstate = ""
             
         return render(request, "auctions/display_listing.html", {
             "dlisting_name" : listing.listing_name,
@@ -100,6 +120,7 @@ def show_listing(request, listing):
             "dimg_width" : vimg_width,
             "dimg_height" : vimg_height,
             "dend_date" : listing.end_date,
+            #"waitlist_state" : ,
         })
     
 def create_listing(request):

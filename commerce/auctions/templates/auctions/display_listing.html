@@ -19,6 +19,10 @@
 	<h3>Minimum Bid: {{ dcurrent_bid }} </h3>
 	<h4>Ends: {{ dend_date }}</h4>
 	{{ dlisting_category }}
+	<br />
+	<a href="{% url 'watchlist' dlisting_name duser_name %}">Watchlist {{ dlisting_name }} </a>
+	<br />
+	{{ waitlist_state }}
 	<br /><br />
 </div>    
 {% endblock %}

@@ -27,3 +27,7 @@ class AuctionListingComments(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     listing = models.ForeignKey(AuctionListing, on_delete=models.CASCADE)
     
+class WatchList(models.Model):
+    auction_listing = models.ForeignKey(AuctionListing, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    

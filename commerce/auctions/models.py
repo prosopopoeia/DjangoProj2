@@ -5,8 +5,7 @@ import datetime
 
 class User(AbstractUser):
     pass
-
-
+    
 class AuctionListing(models.Model):
     listing_name = models.TextField(max_length=30)
     listing_price = models.DecimalField(decimal_places=2, max_digits=6)
@@ -15,12 +14,17 @@ class AuctionListing(models.Model):
     image_path = models.TextField(max_length=500, null=True)
     user  = models.ForeignKey(User, on_delete=models.CASCADE)
     end_date = models.DateField(null=True, default=datetime.date.today)
+    active = models.BooleanField(default=True)
+
+class FinishedAuctions(models.Model):
+    winner = models.ForeignKey(User, on_delete=models.CASCADE)
+    listing_name = models.ForeignKey(AuctionListing, on_delete=models.CASCADE)
 
 class Bids(models.Model):
-    bid_amount = models.DecimalField(decimal_places=2, max_digits=6 ) 
+    bid_amount = models.DecimalField(decimal_places=2, max_digits=11 ) 
+    is_highest_bid = models.BooleanField(null=True)
     auction_listing = models.ForeignKey(AuctionListing, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)    
     
 class AuctionListingComments(models.Model):
     comment = models.TextField(max_length=80)

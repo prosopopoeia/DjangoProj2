@@ -1,34 +1,45 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-	<h2>Active Listings</h2>
-
+	<h2>{{ heading }}</h2>
 
 	<br /><br />
+	
 	{% for auction in auctions %}
-		<div class="bg-dark mr-md-2 pt-2 px-1 pt-md-1 px-md-1 text-center text-white overflow-hidden">
-			<div class="my-3 py-3">
-				<h2 class="display-2">Listing: {{ auction.listing_name }}</h2>
+		
+			
+			<div class="bg-dark mr-md-2 pt-2 px-1 pt-md-1 px-md-1 text-center text-white overflow-hidden">
+				<div class="my-3 py-3">
+					<h3 class="display-3">{{ auction.listing_name }}</h3>
+				</div>
 			</div>
-		</div>
 				
-		<br /><br />
-		<img src="{{ auction.image_path }}"/>
-		<br /><br />
+			<br /><br />
+			<img src="{{ auction.image_path }}"/>
+			<br /><br />
 
-		<div class="container-fluid">	
-			{{ auction.listing_detail }}
+			<div class="container-fluid">	
+				{{ auction.listing_detail }}
 					
-			<h4 class="display-5">Seller: {{ auction.user.username }} {{ auction.user.email }}<h4>
-			<h3>Minimum Bid: {{ auction.listing_price }} </h3>
-			<h4>Ends: {{ auction.end_date }}</h4>
-			<a href="{% url 'display_listing' auction.listing_name %}">Visit {{ auction.listing_name }} detail page</a>
+				<h4 class="display-5">Seller: {{ auction.user.username }} {{ auction.user.email }}<h4>
+				
+				{% if auction.active %}
+					<h4>Ends: {{ auction.end_date }}</h4>
+				    <a href="{% url 'display_listing' auction.listing_name %}">Visit {{ auction.listing_name }} detail page</a>
+				
+				{% else %}
+				    Ending price: {{ auction.listing_price }}
+					<br />
+					<a href="{% url 'remove_auction' auction.listing_name %}">Remove from your Auction list</a>
+				{% endif %}
+				<br /><br />
+				Listing Category: {{ auction.listing_category }}
+				<br /><br />
+				
+			</div>
 			<br /><br />
-			{{ auction.listing_category }}
-			<br /><br />
-		</div>
-		<br /><br />
-		<div class="bg-dark my-1 py-1 text-center text-white">-</div>				
+			<div class="bg-dark my-1 py-1 text-center text-white">-</div>
+	
     {% endfor %}
    
 {% endblock %}

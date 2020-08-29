@@ -4,7 +4,7 @@
 {% block body %}
 <div class="bg-dark mr-md-2 pt-2 px-1 pt-md-1 px-md-1 text-center text-white overflow-hidden">
 	<div class="my-3 py-3">
-		<h2 class="display-2">Listing: {{ dlisting_name }}</h2>
+		<h2 class="display-2">{{ dlisting_name }}</h2>
 	</div>
 </div>
 		
@@ -16,13 +16,29 @@
 	{{ dlisting_detail }}
 	<div class="bg-dark my-3 py-3"></div>		
 	<h4 class="display-5">Seller: {{ duser_name }} {{ duser_email }}<h4>
-	<h3>Minimum Bid: {{ dcurrent_bid }} </h3>
+	<h3>Current Bid: {{ dcurrent_bid }} </h3>
+	<div class="bg-dark my-1 py-1 text-white">{{ msg }}</div>	
 	<h4>Ends: {{ dend_date }}</h4>
-	{{ dlisting_category }}
-	<br />
-	<a href="{% url 'watchlist' dlisting_name duser_name %}">Watchlist {{ dlisting_name }} </a>
-	<br />
-	{{ waitlist_state }}
+	
 	<br /><br />
+	Listing Category: {{ dlisting_category }}
+	<br />
+	{% if user.is_authenticated %}	
+		{% if user.username == duser_name %}
+			<a href="{% url 'end_auction' dlisting_name %}">end auction?</a>
+		{% else %}
+			<form method="post" action="{% url 'bid' dlisting_name %}">
+				{% csrf_token %}
+				<input type="submit" name="sub">
+				<!-- <button type="submit" value="Submit">baton</button> -->
+				{{ dbid_form }}
+			</form>
+			<a href="{% url 'watchlist' dlisting_name %}">{{ watchlist_state }}</a>
+		{% endif %}
+	{% else %}
+		Sign in to bid or watchlist listing
+	{% endif %}	
+	<br /><br />
+	
 </div>    
 {% endblock %}

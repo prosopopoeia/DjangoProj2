@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from auctions.forms import NewListingForm, SubmitBidForm
+from auctions.forms import NewListingForm, SubmitBidForm, AuctionListingCommentForm
 from decimal import *
 
 from .models import User, AuctionListing, Bids, AuctionListingComments, WatchList, FinishedAuctions
@@ -77,53 +77,105 @@ def index(request):
 
 def end_auction(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
+    susername = Bids.objects.get(auction_listing=Auction_object, is_highest_bid=True).user.username
+    if susername == Auction_object.user.username:
+        remove_auction(request, plisting)
+    
     Auction_object.active = False
     Auction_object.save()
-    try:
-        susername = Bids.objects.get(auction_listing=Auction_object, is_highest_bid=True).user.username
-    except:
-        Auction_object.delete()
-        return HttpResponse("fail")
     vuser = get_object_or_404(User, username=susername)
     FinishedAuctions.objects.create(winner=vuser, listing_name=Auction_object)
     return redirect('index')
 
 def remove_auction(request, plisting):
     auction = AuctionListing.objects.get(listing_name=plisting)
-    auction.delete() 
-    return won_view(request)
+    auction.delete()
+    return users_view(request)
 
-def won_view(request):
+def created_auctions_view(request):
+    created_auctions = {}
+    head = "Your Created Auctions"
+    try:
+        susername = request.session.get("uname", "")
+        vuser = get_object_or_404(User, username=susername)
+    except:
+        head = "invalid user"           
+    try:
+        created_auctions = AuctionListing.objects.filter(user=vuser)        
+    except:
+        head = "No auctions to display" 
+    return render(request, "auctions/index.html", {
+        "auctions" : created_auctions,
+        "heading" : head })
+        
+def users_view(request):
     try:
         susername = request.session.get("uname", "")
         vuser = get_object_or_404(User, username=susername)
     except:
         auction_data = "invalid user"        
-    auction_list = []    
+    
+    auctions_won_list = []    
     try:
         auction_data = FinishedAuctions.objects.filter(winner=vuser) 
         for ad in auction_data:
-            auction_list.append(ad.listing_name)
+            auctions_won_list.append(ad.listing_name)
     except:
-        auction_data = "No auctions to display"             
+        auction_data = "No auctions to display" 
+    
+    auctions_watchlisted = []    
+    try:
+        watchlist_data = WatchList.objects.filter(user=vuser) 
+        for wd in watchlist_data:
+            auctions_watchlisted.append(wd.auction_listing)
+    except:
+        watchlist_data = "No auctions to display" 
+    
+    auction_bids = []    
+    try:
+        active_bid_data = Bids.objects.filter(user=vuser) 
+        for abd in watchlist_data:
+            auction_bids.append(abd.auction_listing)
+    except:
+        active_bid_data = "No auctions to display" 
+    if auctions_won_list is not None:
+        won = True
+    else:
+        won = False
     return render(request, "auctions/index.html", {
-        "auctions" : auction_list,
-        "heading" : 'Your Winning Auctions'})
+        "auctions" : auctions_won_list,
+        "won" : won,
+        "watchlisted" : auctions_watchlisted,
+        "active_bids" : auction_bids ,
+        "heading" : 'Your Auctions'})
             
 def watchlist(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)    
     try:
         User_object = get_object_or_404(User, username=request.session.get("uname", ""))
     except:
-        #not logged in
         return show_listing(request, Auction_object)
     try:
+        #it is currently watchlisted, we are removing it
         wl = WatchList.objects.get(auction_listing=Auction_object, user=User_object)
         wl.delete()
     except:
-        #not yet watchlisted
+        #not yet watchlisted - we are adding it
         WatchList.objects.create(auction_listing=Auction_object, user=User_object)        
     return show_listing(request, Auction_object)
+
+def add_comments(request, plisting):
+    Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
+    vcomments = request.POST.get("listing_comments")
+    susername = request.session.get("uname", "")
+    vuser = User.objects.get(username=susername)
+    AuctionListingComments.objects.create(
+        listing=Auction_object,
+        comment=vcomments,
+        user=vuser)
+    return show_listing(request, AuctionListing)
+    
+    
 
 def display_listing(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
@@ -158,8 +210,7 @@ def bid(request, plisting):
             bid_amount=vbid_amount, 
             is_highest_bid=True,
             auction_listing=listing,
-            user=vuser
-        )
+            user=vuser)
         vbid.is_highest_bid = False
         vbid.save()
         listing.listing_price = vbid_amount
@@ -176,7 +227,8 @@ def show_listing(request, listing, optional_msg=""):
         vimg_height = "500"     
     if listing.active == False:
         return redirect('index')
-    vbid_form = SubmitBidForm()         
+    vbid_form = SubmitBidForm()
+    vcomment_form = AuctionListingCommentForm() 
     try:        
         susername = request.session.get("uname", "")
         vuser = User.objects.get(username=susername)
@@ -198,12 +250,14 @@ def show_listing(request, listing, optional_msg=""):
     try:
         Bid_Object = Bids.objects.get(
             auction_listing=listing,
-            is_highest_bid=Yes)
+            is_highest_bid=True)
         vcurrent_bid = Bid_Object.bid_amount
+        vhighest_bidder = Bid_Object.user
     except:
         vcurrent_bid = listing.listing_price
+        vhighest_bidder = ""
         
-    watchstate = "Remove from watchlist"    
+    watchstate = "Remove from watchlist"
     try:
         Watchlist_object = WatchList.objects.get(
             auction_listing=listing,
@@ -223,7 +277,10 @@ def show_listing(request, listing, optional_msg=""):
         "dend_date" : listing.end_date,
         "watchlist_state" : watchstate,
         "dbid_form" : vbid_form,
-        "msg" : optional_msg,})
+        "dhighest_bidder" : vhighest_bidder,
+        "msg" : optional_msg,
+        "dcomment_form" : vcomment_form,
+        "dcomments" : AuctionListingComments.objects.all()})
     
 def end_auction(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)

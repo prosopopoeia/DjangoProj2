@@ -9,6 +9,8 @@ class NewListingForm(forms.Form):
     image_path = forms.CharField(max_length=500, required=False)
     end_date = forms.DateField(initial=datetime.date.today)
     
-    
 class SubmitBidForm(forms.Form):
     bid = forms.DecimalField(decimal_places=2, max_digits=9)
+    
+class AuctionListingCommentForm(forms.Form):
+     listing_comments = forms.CharField(widget=forms.Textarea, label='', max_length=1000)

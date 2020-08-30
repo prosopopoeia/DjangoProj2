@@ -11,12 +11,13 @@
 <br /><br />
 <img width="{{ dimg_width }}" height="{{dimg_height }}" src="{{dimage_path }}"/>
 <br /><br />
-
+{{ vhighest_bidder.username }}
 <div class="container-fluid">	
 	{{ dlisting_detail }}
 	<div class="bg-dark my-3 py-3"></div>		
 	<h4 class="display-5">Seller: {{ duser_name }} {{ duser_email }}<h4>
 	<h3>Current Bid: {{ dcurrent_bid }} </h3>
+	
 	<div class="bg-dark my-1 py-1 text-white">{{ msg }}</div>	
 	<h4>Ends: {{ dend_date }}</h4>
 	
@@ -26,6 +27,11 @@
 	{% if user.is_authenticated %}	
 		{% if user.username == duser_name %}
 			<a href="{% url 'end_auction' dlisting_name %}">end auction?</a>
+			<br />
+			Current highest bidder: {{ dhighest_bidder.username }}
+			<br />
+			Email : {{ dhighest_bidder.email }}
+			<br />
 		{% else %}
 			<form method="post" action="{% url 'bid' dlisting_name %}">
 				{% csrf_token %}
@@ -35,10 +41,30 @@
 			</form>
 			<a href="{% url 'watchlist' dlisting_name %}">{{ watchlist_state }}</a>
 		{% endif %}
+		<div class="bg-dark my-3 py-3 text-white">Comments</div>
+		<h4> Comments </h4>
+		<form method="post" action="{% url 'add_comments' dlisting_name %}">
+			{% csrf_token %}
+			<input type="submit" name="sub">
+				<!-- <button type="submit" value="Submit">baton</button> -->
+			{{ dcomment_form }}
+		</form>
 	{% else %}
 		Sign in to bid or watchlist listing
 	{% endif %}	
-	<br /><br />
+	
+	<br />
+	<div class="bg-dark my-3 py-3"></div>
+	<h4 class="display-5">User Comments:<h4>
+	{% for comment in dcomments %}
+	User Name - {{ dcomments.user.username }}
+	<br />
+	{{ dcomments.comment }}
+	<div class="bg-dark my-3 py-3"></div>		
+	{% endfor %}
+	<br />
+	
+	
 	
 </div>    
 {% endblock %}

@@ -31,7 +31,10 @@
                     <a class="nav-link" href="{% url 'create_listing' %}">Create Listing</a>
                 </li>
 				<li class="nav-item">
-                    <a class="nav-link" href="{% url 'won_view' %}">Auction won</a>
+                    <a class="nav-link" href="{% url 'users_view' %}">Won/Watchlisted/Active Bids</a>
+                </li>
+				<li class="nav-item">
+                    <a class="nav-link" href="{% url 'created_auctions_view' %}">Created Auctions</a>
                 </li>
 				
             {% else %}

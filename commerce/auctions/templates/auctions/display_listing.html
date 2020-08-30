@@ -52,19 +52,19 @@
 	{% else %}
 		Sign in to bid or watchlist listing
 	{% endif %}	
-	
+
 	<br />
-	<div class="bg-dark my-3 py-3"></div>
-	<h4 class="display-5">User Comments:<h4>
+	<div class="bg-secondary my-3 py-3"></div>
+	<h4 class="display-6">User Comments:<h4>
 	{% for comment in dcomments %}
-	User Name - {{ dcomments.user.username }}
-	<br />
-	{{ dcomments.comment }}
-	<div class="bg-dark my-3 py-3"></div>		
+		<br />
+		<div class="label label-success"> User Name - {{ comment.user.username }}</div>
+		<br />
+		<div class="bg-white " > {{ comment.comment }}<div>
+		<br />
+		<div class="bg-warning my-1 py-1"></div>		
 	{% endfor %}
 	<br />
-	
-	
-	
-</div>    
+</div>
+
 {% endblock %}

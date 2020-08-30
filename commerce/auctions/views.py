@@ -146,7 +146,7 @@ def users_view(request):
         "auctions" : auctions_won_list,
         "won" : won,
         "watchlisted" : auctions_watchlisted,
-        "active_bids" : auction_bids ,
+        "active_bids" : auction_bids,
         "heading" : 'Your Auctions'})
             
 def watchlist(request, plisting):
@@ -173,8 +173,7 @@ def add_comments(request, plisting):
         listing=Auction_object,
         comment=vcomments,
         user=vuser)
-    return show_listing(request, AuctionListing)
-    
+    return show_listing(request, Auction_object)    
     
 
 def display_listing(request, plisting):
@@ -227,6 +226,8 @@ def show_listing(request, listing, optional_msg=""):
         vimg_height = "500"     
     if listing.active == False:
         return redirect('index')
+    # user_case = listing.user
+    # username_case = user_case.username
     vbid_form = SubmitBidForm()
     vcomment_form = AuctionListingCommentForm() 
     try:        
@@ -263,7 +264,8 @@ def show_listing(request, listing, optional_msg=""):
             auction_listing=listing,
             user=vuser)            
     except: 
-        watchstate = "Add to watchlist"    
+        watchstate = "Add to watchlist" 
+    
     return render(request, "auctions/display_listing.html", {
         "dlisting_name" : listing.listing_name,
         "dcurrent_bid" : vcurrent_bid,
@@ -280,7 +282,8 @@ def show_listing(request, listing, optional_msg=""):
         "dhighest_bidder" : vhighest_bidder,
         "msg" : optional_msg,
         "dcomment_form" : vcomment_form,
-        "dcomments" : AuctionListingComments.objects.all()})
+        "dcomments" : AuctionListingComments.objects.all()
+        })
     
 def end_auction(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)

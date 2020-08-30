@@ -10,6 +10,7 @@ urlpatterns = [
     path("users_view", views.users_view, name="users_view"),
     path("created_auctions_view", views.created_auctions_view, name="created_auctions_view"),
     path("display_listing/<str:plisting>", views.display_listing, name="display_listing"),
+    path("category_display/<str:pcategory>", views.category_display, name="category_display"),
     path("create_listing", views.create_listing, name="create_listing"),
     path("watchlist/<str:plisting>", views.watchlist, name="watchlist"),
     path("add_comments/<str:plisting>", views.add_comments, name="add_comments"),

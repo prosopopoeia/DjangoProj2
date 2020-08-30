@@ -7,64 +7,86 @@
 		<h2 class="display-2">{{ dlisting_name }}</h2>
 	</div>
 </div>
+	
+<br />
+<div class="container">
+		<div class="row">
+			<div class="column">
+				<img width="{{ dimg_width }}" height="{{dimg_height }}" src="{{dimage_path }}"/>
+			</div>
+			<div class="column">
+				<br /><br />
+				{{ vhighest_bidder.username }}
+				<div class="container-fluid">	
+					
+					
+					{% if msg %}
+						<div class="bg-danger my-3 py-3 text-white"><h2>{{ msg }}</h2></div>
+					{% endif %}
+					<h3 class="display-3">Current Bid: {{ dcurrent_bid }} </h3>
+						
+					<h4 class="display-5">Seller: {{ duser_name }} {{ duser_email }}</h4>
+					<h4>Ends: {{ dend_date }}</h4>
+					<br />
+					<h4 class="display-5">{{ dlisting_detail }}</h4>
+					
+					
+					<br /><br />
+					{% if user.is_authenticated %}	
+						{% if user.username == duser_name %}
+							<a href="{% url 'end_auction' dlisting_name %}">end auction?</a>
+							<br />
+							<h4 class="display-5">Current highest bidder: {{ dhighest_bidder.username }}</h4>
+							<br />
+							<h4 class="display-5">Email : {{ dhighest_bidder.email }}</h4>
+							<br />
+						{% else %}
+							<form method="post" action="{% url 'bid' dlisting_name %}">
+								{% csrf_token %}
+								<input class="btn btn-primary" type="submit" value="submit bid">				
+								{{ dbid_form }}
+							</form>
+							<br />
+							<h4 class="display-5"><a href="{% url 'watchlist' dlisting_name %}">{{ watchlist_state }}</a></h4>
+						{% endif %}
+					<h4 class="display-5"> Listing Category: <a href="{% url 'category_display' dlisting_category %}">{{ dlisting_category }}</a>
+				</div>
+			
+				
+				
 		
-<br /><br />
-<img width="{{ dimg_width }}" height="{{dimg_height }}" src="{{dimage_path }}"/>
-<br /><br />
-{{ vhighest_bidder.username }}
-<div class="container-fluid">	
-	{{ dlisting_detail }}
-	<div class="bg-dark my-3 py-3"></div>		
-	<h4 class="display-5">Seller: {{ duser_name }} {{ duser_email }}<h4>
-	<h3>Current Bid: {{ dcurrent_bid }} </h3>
 	
-	<div class="bg-dark my-1 py-1 text-white">{{ msg }}</div>	
-	<h4>Ends: {{ dend_date }}</h4>
-	
-	<br /><br />
-	Listing Category: {{ dlisting_category }}
-	<br />
-	{% if user.is_authenticated %}	
-		{% if user.username == duser_name %}
-			<a href="{% url 'end_auction' dlisting_name %}">end auction?</a>
-			<br />
-			Current highest bidder: {{ dhighest_bidder.username }}
-			<br />
-			Email : {{ dhighest_bidder.email }}
-			<br />
-		{% else %}
-			<form method="post" action="{% url 'bid' dlisting_name %}">
-				{% csrf_token %}
-				<input type="submit" name="sub">
-				<!-- <button type="submit" value="Submit">baton</button> -->
-				{{ dbid_form }}
-			</form>
-			<a href="{% url 'watchlist' dlisting_name %}">{{ watchlist_state }}</a>
-		{% endif %}
-		<div class="bg-dark my-3 py-3 text-white">Comments</div>
-		<h4> Comments </h4>
-		<form method="post" action="{% url 'add_comments' dlisting_name %}">
-			{% csrf_token %}
-			<input type="submit" name="sub">
-				<!-- <button type="submit" value="Submit">baton</button> -->
-			{{ dcomment_form }}
-		</form>
 	{% else %}
 		Sign in to bid or watchlist listing
 	{% endif %}	
-
+	</div>
+		</div>
+	</div>
+	<br /><br />
+				<div class="bg-secondary my-3 py-3"></div>
+	<h3>Comments</h3>		
 	<br />
-	<div class="bg-secondary my-3 py-3"></div>
-	<h4 class="display-6">User Comments:<h4>
+	 
+	 {% if dcomments %}
+	<h3 class="display-3">User Comments:</h3>
 	{% for comment in dcomments %}
 		<br />
-		<div class="label label-success"> User Name - {{ comment.user.username }}</div>
-		<br />
+		<div class="label label-success"> From User - {{ comment.user.username }}</div>
+		<br /><br />
 		<div class="bg-white " > {{ comment.comment }}<div>
 		<br />
 		<div class="bg-warning my-1 py-1"></div>		
 	{% endfor %}
+	{% endif %}
 	<br />
+	<div class="form-group">
+			<form method="post" action="{% url 'add_comments' dlisting_name %}">
+				{% csrf_token %}
+				<label>Add comments</label><br />
+				{% render_field dcomment_form.listing_comments|attr:"class:form-control"|attr:"rows:5" %}
+				<input class="btn btn-primary" type="submit" value="add comments">				
+			</form>
+		</div>
 </div>
 
 {% endblock %}

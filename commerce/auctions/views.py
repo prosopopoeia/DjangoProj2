@@ -6,6 +6,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from auctions.forms import NewListingForm, SubmitBidForm, AuctionListingCommentForm
 from decimal import *
+from django.contrib.auth.decorators import login_required
 
 from .models import User, AuctionListing, Bids, AuctionListingComments, WatchList, FinishedAuctions
     
@@ -60,21 +61,14 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
-            ###################################################
-            # new_entry = Entry()
-            # new_entry.cat = v_this_category_this_period
-            # new_entry.entry_note = e_notes
-            # new_entry.amount = decimal.Decimal(e_amt)
-            # new_entry.save()   
-            ###################################################
-
-###################################################################################
+ 
 def index(request):
     auctions = AuctionListing.objects.filter(active=True)
     return render(request, "auctions/index.html", {
         "auctions" : auctions,
         "heading" : "Active Listings"})
 
+@login_required
 def end_auction(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
     susername = Bids.objects.get(auction_listing=Auction_object, is_highest_bid=True).user.username
@@ -87,11 +81,13 @@ def end_auction(request, plisting):
     FinishedAuctions.objects.create(winner=vuser, listing_name=Auction_object)
     return redirect('index')
 
+@login_required
 def remove_auction(request, plisting):
     auction = AuctionListing.objects.get(listing_name=plisting)
     auction.delete()
     return users_view(request)
 
+@login_required
 def created_auctions_view(request):
     created_auctions = {}
     head = "Your Created Auctions"
@@ -107,7 +103,8 @@ def created_auctions_view(request):
     return render(request, "auctions/index.html", {
         "auctions" : created_auctions,
         "heading" : head })
-        
+
+@login_required
 def users_view(request):
     try:
         susername = request.session.get("uname", "")
@@ -134,8 +131,9 @@ def users_view(request):
     auction_bids = []    
     try:
         active_bid_data = Bids.objects.filter(user=vuser) 
-        for abd in watchlist_data:
-            auction_bids.append(abd.auction_listing)
+        for abd in active_bid_data:
+            if not abd.auction_listing.user == vuser:
+                auction_bids.append(abd.auction_listing)
     except:
         active_bid_data = "No auctions to display" 
     if auctions_won_list is not None:
@@ -148,7 +146,8 @@ def users_view(request):
         "watchlisted" : auctions_watchlisted,
         "active_bids" : auction_bids,
         "heading" : 'Your Auctions'})
-            
+
+@login_required            
 def watchlist(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)    
     try:
@@ -164,25 +163,31 @@ def watchlist(request, plisting):
         WatchList.objects.create(auction_listing=Auction_object, user=User_object)        
     return show_listing(request, Auction_object)
 
+@login_required
 def add_comments(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
     vcomments = request.POST.get("listing_comments")
     susername = request.session.get("uname", "")
     vuser = User.objects.get(username=susername)
-    AuctionListingComments.objects.create(
-        listing=Auction_object,
-        comment=vcomments,
-        user=vuser)
-    return show_listing(request, Auction_object)    
-    
+    try:
+        AuctionListingComments.objects.get(comment=vcomments,listing=Auction_object)
+    except:
+        AuctionListingComments.objects.create(
+            listing=Auction_object,
+            comment=vcomments,
+            user=vuser)
+    return show_listing(request, Auction_object)
 
 def display_listing(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
     return show_listing(request, Auction_object)
 
+@login_required
 def bid(request, plisting):
     vbid_amount = Decimal(request.POST.get("bid"))
-    listing = get_object_or_404(AuctionListing, listing_name=plisting)        
+    listing = get_object_or_404(AuctionListing, listing_name=plisting)  
+    if vbid_amount < 0:
+        return redirect('index')
     try:        
         susername = request.session.get("uname", "")
         vuser = User.objects.get(username=susername)
@@ -225,9 +230,7 @@ def show_listing(request, listing, optional_msg=""):
         vimg_width = "400"
         vimg_height = "500"     
     if listing.active == False:
-        return redirect('index')
-    # user_case = listing.user
-    # username_case = user_case.username
+        return redirect('index')    
     vbid_form = SubmitBidForm()
     vcomment_form = AuctionListingCommentForm() 
     try:        
@@ -282,18 +285,30 @@ def show_listing(request, listing, optional_msg=""):
         "dhighest_bidder" : vhighest_bidder,
         "msg" : optional_msg,
         "dcomment_form" : vcomment_form,
-        "dcomments" : AuctionListingComments.objects.all()
+        "dcomments" : AuctionListingComments.objects.filter(listing=listing)
         })
-    
+        
+def category_display(request, pcategory):
+    auctions = AuctionListing.objects.filter(listing_category=pcategory, active=True)
+    return render(request, "auctions/index.html", {
+        "auctions" : auctions,
+        "heading" : "Listings by Category"})
+
+@login_required
 def end_auction(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
     Auction_object.active = False
     Auction_object.save()
     susername = Bids.objects.get(auction_listing=Auction_object, is_highest_bid=True).user.username
+    #get rid of losing bids
+    losing_bids = Bids.objects.filter(auction_listing=Auction_object, is_highest_bid=False)
+    for loser in losing_bids:
+        loser.delete()
     vuser = get_object_or_404(User, username=susername)
     FinishedAuctions.objects.create(winner=vuser, listing_name=Auction_object)
     return redirect('index')
 
+@login_required
 def create_listing(request):
     if request.method == "POST":
         vcreate_listing_form = NewListingForm(request.POST)
@@ -304,8 +319,10 @@ def create_listing(request):
             vlisting_detail  = vcreate_listing_form.cleaned_data["listing_detail"]
             vimage_path  = vcreate_listing_form.cleaned_data["image_path"]
             vlisting_category = vcreate_listing_form.cleaned_data["listing_category"]
+            if vlisting_category == '':
+                vlisting_category = 'empty'
             vend_date = vcreate_listing_form.cleaned_data["end_date"]
-            puser = request.POST.get("huser") #TODO - TEST request.session.get("uname")!!!!!!!!******!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*******
+            puser = request.POST.get("huser") 
             vuser = User.objects.get(username=puser)        
             try:
                 Auction_object = AuctionListing.objects.get(listing_name=vname)

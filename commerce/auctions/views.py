@@ -273,21 +273,15 @@ def show_listing(request, listing, optional_msg=""):
         watchstate = "Add to watchlist" 
     
     return render(request, "auctions/display_listing.html", {
-        "dlisting_name" : listing.listing_name,
-        "dcurrent_bid" : vcurrent_bid,
-        "dimage_path" : listing.image_path,
-        "duser_name" : listing.user.username,
-        "duser_email" : listing.user.email,
-        "dlisting_category" : listing.listing_category,
-        "dlisting_detail" : listing.listing_detail,
-        "dend_date" : listing.end_date,
+        "dcurrent_bid" : vcurrent_bid,        
         "watchlist_state" : watchstate,
         "dbid_form" : vbid_form,
         "dhighest_bidder" : vhighest_bidder,
         "msg" : optional_msg,
         "dcomment_form" : vcomment_form,
         "dcomments" : AuctionListingComments.objects.filter(listing=listing),
-        "listing" : listing})
+        "listing" : listing
+        })
 
       
 def category_display(request, pcategory):

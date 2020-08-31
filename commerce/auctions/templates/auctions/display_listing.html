@@ -85,7 +85,7 @@
 	{% endif %}
 	<br />
 	<div class="form-group">
-			<form method="post" action="{% url 'add_comments' dlisting_name %}">
+			<form method="post" action="{% url 'add_comments' listing.listing_name %}">
 				{% csrf_token %}
 				<label>Add comments</label><br />
 				{% render_field dcomment_form.listing_comments|attr:"class:form-control"|attr:"rows:5" %}

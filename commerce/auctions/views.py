@@ -68,6 +68,7 @@ def index(request):
         "auctions" : auctions,
         "heading" : "Active Listings"})
 
+
 @login_required
 def end_auction(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
@@ -81,11 +82,13 @@ def end_auction(request, plisting):
     FinishedAuctions.objects.create(winner=vuser, listing_name=Auction_object)
     return redirect('index')
 
+
 @login_required
 def remove_auction(request, plisting):
     auction = AuctionListing.objects.get(listing_name=plisting)
     auction.delete()
     return users_view(request)
+
 
 @login_required
 def created_auctions_view(request):
@@ -103,6 +106,7 @@ def created_auctions_view(request):
     return render(request, "auctions/index.html", {
         "auctions" : created_auctions,
         "heading" : head })
+
 
 @login_required
 def users_view(request):
@@ -147,6 +151,7 @@ def users_view(request):
         "active_bids" : auction_bids,
         "heading" : 'Your Auctions'})
 
+
 @login_required            
 def watchlist(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)    
@@ -163,6 +168,7 @@ def watchlist(request, plisting):
         WatchList.objects.create(auction_listing=Auction_object, user=User_object)        
     return show_listing(request, Auction_object)
 
+
 @login_required
 def add_comments(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
@@ -178,9 +184,11 @@ def add_comments(request, plisting):
             user=vuser)
     return show_listing(request, Auction_object)
 
+
 def display_listing(request, plisting):
     Auction_object = get_object_or_404(AuctionListing, listing_name=plisting)
     return show_listing(request, Auction_object)
+
 
 @login_required
 def bid(request, plisting):
@@ -223,14 +231,10 @@ def bid(request, plisting):
         msg = "Error - Bid must exceed current bid!"
     return show_listing(request, listing, msg)    
     
-def show_listing(request, listing, optional_msg=""):
-    vimg_width = "0"
-    vimg_height = "0"            
-    if listing.image_path:
-        vimg_width = "400"
-        vimg_height = "500"     
-    if listing.active == False:
-        return redirect('index')    
+
+def show_listing(request, listing, optional_msg=""): 
+    # if listing.active == False:
+        # return redirect('index')    
     vbid_form = SubmitBidForm()
     vcomment_form = AuctionListingCommentForm() 
     try:        
@@ -245,12 +249,11 @@ def show_listing(request, listing, optional_msg=""):
             "duser_email" : listing.user.email,
             "dlisting_category" : listing.listing_category,
             "dlisting_detail" : listing.listing_detail,
-            "dimg_width" : vimg_width,
-            "dimg_height" : vimg_height,
             "dend_date" : listing.end_date,
             "watchlist_state" : "",
             "dbid_form" : vbid_form,
-            "msg" : optional_msg,})    
+            "msg" : optional_msg,
+            "listing": listing,})    
     try:
         Bid_Object = Bids.objects.get(
             auction_listing=listing,
@@ -277,22 +280,22 @@ def show_listing(request, listing, optional_msg=""):
         "duser_email" : listing.user.email,
         "dlisting_category" : listing.listing_category,
         "dlisting_detail" : listing.listing_detail,
-        "dimg_width" : vimg_width,
-        "dimg_height" : vimg_height,
         "dend_date" : listing.end_date,
         "watchlist_state" : watchstate,
         "dbid_form" : vbid_form,
         "dhighest_bidder" : vhighest_bidder,
         "msg" : optional_msg,
         "dcomment_form" : vcomment_form,
-        "dcomments" : AuctionListingComments.objects.filter(listing=listing)
-        })
-        
+        "dcomments" : AuctionListingComments.objects.filter(listing=listing),
+        "listing" : listing})
+
+      
 def category_display(request, pcategory):
     auctions = AuctionListing.objects.filter(listing_category=pcategory, active=True)
     return render(request, "auctions/index.html", {
         "auctions" : auctions,
         "heading" : "Listings by Category"})
+
 
 @login_required
 def end_auction(request, plisting):
@@ -307,6 +310,7 @@ def end_auction(request, plisting):
     vuser = get_object_or_404(User, username=susername)
     FinishedAuctions.objects.create(winner=vuser, listing_name=Auction_object)
     return redirect('index')
+
 
 @login_required
 def create_listing(request):

@@ -12,7 +12,9 @@
 <div class="container">
 		<div class="row">
 			<div class="column">
-				<img width="{{ dimg_width }}" height="{{dimg_height }}" src="{{dimage_path }}"/>
+				{% if dimage_path %}
+					<img width="400" height="500" src="{{ listing.image_path }}"/>
+				{% endif %}
 			</div>
 			<div class="column">
 				<br /><br />
@@ -23,33 +25,36 @@
 					{% if msg %}
 						<div class="bg-danger my-3 py-3 text-white"><h2>{{ msg }}</h2></div>
 					{% endif %}
-					<h3 class="display-3">Current Bid: {{ dcurrent_bid }} </h3>
+					<h3 class="display-3">Current Bid: {{ listing.listing_price }} </h3>
 						
-					<h4 class="display-5">Seller: {{ duser_name }} {{ duser_email }}</h4>
-					<h4>Ends: {{ dend_date }}</h4>
+					<h4 class="display-5">Seller: {{ listing.user.username }} {{ listing.user.email }}</h4>
+					<h4>Ends: {{ listing.end_date }}</h4>
 					<br />
-					<h4 class="display-5">{{ dlisting_detail }}</h4>
+					<h4 class="display-5">{{ listing.listing_detail }}</h4>
 					
 					
 					<br /><br />
 					{% if user.is_authenticated %}	
-						{% if user.username == duser_name %}
-							<a href="{% url 'end_auction' dlisting_name %}">end auction?</a>
-							<br />
-							<h4 class="display-5">Current highest bidder: {{ dhighest_bidder.username }}</h4>
+						{% if user.username == listing.user.username %}
+							{% if listing.active %}
+								<a href="{% url 'end_auction' listing.listing_name %}">end auction?</a><br />
+								<h4 class="display-5">Current highest bidder: {{ dhighest_bidder.username }}</h4>
+							{% else %}
+								<h4 class="display-5">Winner: {{ dhighest_bidder.username }}</h4>
+							{% endif %}
 							<br />
 							<h4 class="display-5">Email : {{ dhighest_bidder.email }}</h4>
 							<br />
 						{% else %}
-							<form method="post" action="{% url 'bid' dlisting_name %}">
+							<form method="post" action="{% url 'bid' listing.listing_name %}">
 								{% csrf_token %}
 								<input class="btn btn-primary" type="submit" value="submit bid">				
 								{{ dbid_form }}
 							</form>
 							<br />
-							<h4 class="display-5"><a href="{% url 'watchlist' dlisting_name %}">{{ watchlist_state }}</a></h4>
+							<h4 class="display-5"><a href="{% url 'watchlist' listing.listing_name %}">{{ watchlist_state }}</a></h4>
 						{% endif %}
-					<h4 class="display-5"> Listing Category: <a href="{% url 'category_display' dlisting_category %}">{{ dlisting_category }}</a>
+					<h4 class="display-5"> Listing Category: <a href="{% url 'category_display' listing.listing_category %}">{{ listing.listing_category }}</a>
 				</div>
 			
 				

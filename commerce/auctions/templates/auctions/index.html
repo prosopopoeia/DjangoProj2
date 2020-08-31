@@ -12,64 +12,49 @@
 		<br /><br />
 	{% endif %}
 	{% for auction in auctions %}
-		
-			
-			<div class="bg-dark mr-md-2 pt-2 px-1 pt-md-1 px-md-1 text-center text-white overflow-hidden">
-				<div class="my-3 py-3">
+		<div class="bg-dark mr-md-2 pt-2 px-1 pt-md-1 px-md-1 text-center text-white overflow-hidden">
+			<div class="my-3 py-3">
 					<h3 class="display-3">{{ auction.listing_name }}</h3>
-				</div>
-			</div>
-			<br /><br />
-	<div class="container">
-		<div class="row">
-			
-			{% if auction.image_path %}
-			<div class="column">
-				<img width="400" height="500" src="{{ auction.image_path }}"/>
-			</div>
-			{% endif %}
-			<div class="column">
-			<div class="container-fluid">	
-				
-				<div class="my-3 py-3"></div>	
-				
-				
-				{% if auction.active %}
-					<h3 class="display-3">Current Price: {{ auction.listing_price }}</h3>
-					<br />
-					<h5 class="display-4">Ends: {{ auction.end_date }}</h5>
-					<br /><br />
-				    <h5 class="display-5"><a href="{% url 'display_listing' auction.listing_name %}">Visit {{ auction.listing_name }} detail page</a></h5>
-					
-				
-				{% else %}
-				    <h3 class="display-3">Ending price: {{ auction.listing_price }}</h3>
-					{% if won %}
-						<br /> <h3 class="display-3">Congratulations! You won!</h3><br />
-					{% endif %}
-					<br />Done with this auction? <br />
-					<a href="{% url 'remove_auction' auction.listing_name %}">Remove from your Auction list</a>
-				{% endif %}
-				<h4 class="display-5">Seller: {{ auction.user.username }} {{ auction.user.email }}<h4>
-				{% if dhighest_bidder %}
-					Highest Bidder: {{ dhighest_bidder.username }}
-					<br />
-					Contact: {{ dhighest_bidder.email }}
-					
-				{% endif %}
-				<br />
-				<h5>{{ auction.listing_detail }}</h5>
-				<br />
-				
-				<h5>Listing Category: <a href="{% url 'category_display' auction.listing_category %}">{{ auction.listing_category }}</a></h5>
-				<br /><br />
-				
-			</div>
 			</div>
 		</div>
-	</div>
-			<br /><br />
-			<div class="bg-dark my-1 py-1 text-center text-white">-</div>
+		<br /><br />
+		<div class="container">
+			<div class="row">
+				{% if auction.image_path %}
+					<div class="column">
+						<img width="400" height="500" src="{{ auction.image_path }}"/>
+					</div>
+				{% endif %}
+				<div class="column">
+					<div class="container-fluid">	
+						<div class="my-3 py-3"></div>	
+						{% if auction.active %}
+							<h3 class="display-3">Current Price: {{ auction.listing_price }}</h3><br />
+							<h5 class="display-4">Ends: {{ auction.end_date }}</h5>
+							<br /><br />
+							<h5 class="display-5"><a href="{% url 'display_listing' auction.listing_name %}">Visit {{ auction.listing_name }} detail page</a></h5>
+						{% else %}
+							<h3 class="display-3">Ending price: {{ auction.listing_price }}</h3>
+							
+							{% if won %}
+								<br /> <h3 class="display-3">Congratulations! You won!</h3><br />							
+							{% endif %}
+							<h5 class="display-5"><a href="{% url 'display_listing' auction.listing_name %}">Visit {{ auction.listing_name }} detail page</a></h5>
+							<br />Done with this auction? <br />
+							<a href="{% url 'remove_auction' auction.listing_name %}">Remove from your Auction list</a>
+						{% endif %}
+					
+								
+						<h4 class="display-5">Seller: {{ auction.user.username }} {{ auction.user.email }}<h4><br />
+						<h5>{{ auction.listing_detail }}</h5><br />
+						<h5>Listing Category: <a href="{% url 'category_display' auction.listing_category %}">{{ auction.listing_category }}</a></h5>
+					</div>
+				</div>
+				<br /><br />
+			</div>		
+		</div>
+		<br /><br />
+		<div class="bg-dark my-1 py-1 text-center text-white">-</div>
 	
     {% endfor %}
     
@@ -146,38 +131,33 @@
 				<div class="my-3 py-3">
 					<h3 class="display-3">{{ auction.listing_name }}</h3>
 				</div>
-			</div>
-				
-			<br /><div class="container">
-			<div class="row">
-			
-			{% if auction.image_path %}
-			<div class="column">
-			<img width="400" height="500" src="{{ auction.image_path }}"/>
+			</div>				
 			<br />
-			</div>
-			{% endif %}
-			<div class="column">
-			<div class="container-fluid">	
-				{{ auction.listing_detail }}
-					
-				<h4 class="display-5">Seller: {{ auction.user.username }} {{ auction.user.email }}<h4>
+			<div class="container">
+				<div class="row">
 				
-				
-					<h4>Ends: {{ auction.end_date }}</h4>
-				    <a href="{% url 'display_listing' auction.listing_name %}">Visit {{ auction.listing_name }} detail page</a>
+					{% if auction.image_path %}
+					<div class="column">
+					<img width="400" height="500" src="{{ auction.image_path }}"/>
 					<br />
-					Current price: {{ auction.listing_price }}
-					<br />
-					<a href="{% url 'remove_auction' auction.listing_name %}">Remove from your Auction list</a>
-				
-				<br /><br />
-				Listing Category: <a href="{% url 'category_display' auction.listing_category %}">{{ auction.listing_category }}</a>
-				<br /><br />
-				
-			</div>
-			</div>
-			</div>
+					</div>
+					{% endif %}
+					<div class="column">
+						<div class="container-fluid">								
+							<h4 class="display-5">Seller: {{ auction.user.username }} {{ auction.user.email }}<h4>
+							<h5>{{ auction.listing_detail }}</h5><br />							
+							<h4>Ends: {{ auction.end_date }}</h4>
+							<a href="{% url 'display_listing' auction.listing_name %}">Visit {{ auction.listing_name }} detail page</a>	<br />
+							Current price: {{ auction.listing_price }}<br />
+							<a href="{% url 'remove_auction' auction.listing_name %}">Remove from your Auction list</a>
+							
+							<br /><br />
+							Listing Category: <a href="{% url 'category_display' auction.listing_category %}">{{ auction.listing_category }}</a>
+							<br /><br />
+							
+						</div>
+					</div>
+				</div>
 			</div>
 			<br /><br />
 			<div class="bg-dark my-1 py-1 text-center text-white">-</div>
